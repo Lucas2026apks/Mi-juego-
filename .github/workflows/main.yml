@@ -1,0 +1,39 @@
+name: Compilar APK con Buildozer
+
+on:
+  push:
+    branches: [ main, master ] # Se ejecutará cada vez que subas algo a estas ramas
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Paso 1: Descargar el código de tu repositorio en el servidor de GitHub
+    - name: Registrar codigo
+      uses: actions/checkout@v4
+
+    # Paso 2: Configurar Python en el servidor
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Paso 3: Instalar todas las herramientas de Linux necesarias para compilar para Android
+    - name: Instalar Buildozer y dependencias de Android
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev tk-dev libgdbm-compat-dev
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.33
+
+    # Paso 4: Ejecutar la compilación automática (este paso toma entre 15 y 20 minutos)
+    - name: Compilar con Buildozer
+      run: buildozer android debug
+
+    # Paso 5: Guardar el APK final en GitHub para que lo puedas descargar
+    - name: Subir APK resultante
+      uses: actions/upload-artifact@v4
+      with:
+        name: Guerrero63km-Apk
+        path: bin/*.apk
